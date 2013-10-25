@@ -47,7 +47,7 @@ class EtcdError(BaseException):
 class Etcd(object):
     """Talks to an etcd instance"""
     def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, ssl_cert=None,
-                 ssl_key=None, follow_leader=True, autostart=True):
+                 ssl_key=None, follow_leader=True, autostart=True, timeout=None):
         """
         host: sets the hostname or IP address of the etcd server
         port: sets the port that the server is listening on
@@ -74,6 +74,7 @@ class Etcd(object):
         self.current_leader = None
         self.follow_leader = follow_leader
         self.machines_cache = None
+        self.timeout = timeout
         if autostart:
             self.start()
 
@@ -242,12 +243,12 @@ get() to get leaf).' % key)
     def machines(self):
         """Returns a list of machines in the cluster"""
         req = self.requests.get(MACHINES_URL.format(self.base_url),
-                                cert=self.ssl_conf)
+                                cert=self.ssl_conf, timeout=self.timeout)
         self.machines_cache = req.text.split(', ')
         return self.machines_cache
 
     def leader(self):
         """Returns the leader"""
         req = self.requests.get(LEADER_URL.format(self.base_url),
-                                cert=self.ssl_conf)
+                                cert=self.ssl_conf, timeout=self.timeout)
         return req.text
